@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion Maintenance Équipements - Wilaya El Bayadh</title>
+    <!-- SheetJS pour lire Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- DataTables pour tableaux interactifs -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <!-- Chart.js pour graphiques -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- CSS personnalisé -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Système de Gestion de Maintenance - Wilaya El Bayadh</h1>
+            <p class="subtitle">Suivi des équipements scolaires (Tablettes, Photocopieurs, Unités Centrales)</p>
+        </header>
+
+        <div class="upload-section">
+            <div class="upload-card">
+                <h2>📤 Charger le fichier Excel</h2>
+                <div class="file-input-container">
+                    <input type="file" id="excelFile" accept=".xlsx, .xls" class="file-input">
+                    <label for="excelFile" class="file-label">
+                        <span class="file-button">📁 Choisir le fichier</span>
+                        <span class="file-name" id="fileName">Aucun fichier sélectionné</span>
+                    </label>
+                </div>
+                <p class="file-info">Format accepté : gestion-maintenace.xlsx (feuilles Acceuil, Informatique, Topograpique, Didactique)</p>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <div class="control-group">
+                <label for="sheetSelect">📄 Feuille de données :</label>
+                <select id="sheetSelect" class="dropdown">
+                    <option value="Acceuil">Acceuil (Vue globale)</option>
+                    <option value="Informatique" selected>Informatique</option>
+                    <option value="Topograpique">Topographie</option>
+                    <option value="Didactique">Didactique</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="wilayaFilter">🏛️ Wilaya :</label>
+                <select id="wilayaFilter" class="dropdown">
+                    <option value="all">Toutes les wilayas</option>
+                    <option value="El Bayadh" selected>El Bayadh</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="typeFilter">🏫 Type d'établissement :</label>
+                <select id="typeFilter" class="dropdown">
+                    <option value="all">Tous les types</option>
+                    <option value="EP">Écoles Primaires (EP)</option>
+                    <option value="CEM">CEM</option>
+                    <option value="Lycée">Lycées</option>
+                    <option value="Direction">Directions</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="technicienFilter">🔧 Technicien :</label>
+                <select id="technicienFilter" class="dropdown">
+                    <option value="all">Tous les techniciens</option>
+                    <option value="Ghaout Mohamed">Ghaout Mohamed</option>
+                    <option value="Aouar Abdekrim">Aouar Abdekrim</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="statutFilter">📊 Statut :</label>
+                <select id="statutFilter" class="dropdown">
+                    <option value="all">Tous les statuts</option>
+                    <option value="rec">Reçus</option>
+                    <option value="re">Réparés</option>
+                    <option value="nr">Non réparés</option>
+                </select>
+            </div>
+
+            <button id="resetFilters" class="btn-reset">🔄 Réinitialiser les filtres</button>
+            <button id="exportCSV" class="btn-export">📥 Exporter en CSV</button>
+        </div>
+
+        <div class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card" id="totalCard">
+                    <h3>Équipements Totaux</h3>
+                    <div class="stat-number" id="totalEquipments">0</div>
+                </div>
+                <div class="stat-card" id="recusCard">
+                    <h3>Équipements Reçus</h3>
+                    <div class="stat-number" id="recusCount">0</div>
+                </div>
+                <div class="stat-card" id="reparésCard">
+                    <h3>Équipements Réparés</h3>
+                    <div class="stat-number" id="reparésCount">0</div>
+                </div>
+                <div class="stat-card" id="nonReparesCard">
+                    <h3>Équipements Non Réparés</h3>
+                    <div class="stat-number" id="nonReparesCount">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-section">
+            <div class="chart-container">
+                <canvas id="statusChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="typeChart"></canvas>
+            </div>
+        </div>
+
+        <div class="table-section">
+            <h2>📋 Liste des Équipements</h2>
+            <div class="table-container">
+                <table id="dataTable" class="display">
+                    <thead>
+                        <tr>
+                            <th>Équipement</th>
+                            <th>Marque</th>
+                            <th>N° Inventaire</th>
+                            <th>N° Série</th>
+                            <th>Établissement</th>
+                            <th>Type</th>
+                            <th>Panne</th>
+                            <th>Technicien</th>
+                            <th>Statut</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Données chargées dynamiquement -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <footer>
+            <p>📞 Contact : Direction de l'Éducation - Wilaya El Bayadh</p>
+            <p>🔄 Système de Gestion Maintenance v1.0 - Charger le fichier Excel pour commencer</p>
+        </footer>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
